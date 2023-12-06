@@ -1,3 +1,17 @@
+-- SELECT all
+SELECT * FROM Employees;
+
+-- INSERT
+INSERT INTO Employees (LastName, FirstName, BirthDate)
+values  ("Valentine", "Nat", "1996-08-13"),
+		("Test", "John", "1985-01-02");
+		
+-- UPDATE
+UPDATE Employees SET FirstName = "Dave" WHERE FirstName = "John";
+
+-- DELETE
+DELETE FROM Employees WHERE FirstName = "Dave"; -- Don't forget to add the WHERE clause unless you want to delete all data from the table
+
 -- Aliases
 SELECT FirstName AS Nombre, LastName AS Apellido FROM Employees;
 
@@ -94,3 +108,43 @@ SELECT SupplierID,  ROUND(AVG(Price), 2) AS Promedio FROM Products GROUP BY Supp
 SELECT SupplierID,  ROUND(AVG(Price), 2) AS Promedio FROM Products WHERE SupplierID IN (3, 4, 5) GROUP BY SupplierID HAVING Promedio > 40; -- Igual se puede usar el WHERE antes de agrupar.
 
 -- Sub Queries
+SELECT ProductID, Quantity, (SELECT ProductName FROM Products WHERE OrderDetails.ProductID = ProductID) AS Product_name FROM OrderDetails;
+
+SELECT ProductID, 
+		(SELECT ProductName FROM Products WHERE OD.ProductID = ProductID) AS Product_name,
+		SUM(Quantity) AS Total_vendido, 
+		(SELECT Price FROM Products WHERE OD.ProductID = ProductID) AS Price, 
+		(SUM(Quantity) * (SELECT Price FROM Products WHERE OD.ProductID = ProductID)) AS Total_recaudado 
+FROM [OrderDetails] OD 
+GROUP BY ProductID 
+ORDER BY Total_recaudado DESC;
+
+SELECT ProductID, 
+		(SELECT ProductName FROM Products WHERE OD.ProductID = ProductID) AS Product_name,
+		SUM(Quantity) AS Total_vendido, 
+		(SUM(Quantity) * (SELECT Price FROM Products WHERE OD.ProductID = ProductID)) AS Total_recaudado 
+FROM [OrderDetails] OD 
+WHERE (SELECT Price FROM Products WHERE OD.ProductID = ProductID)
+GROUP BY ProductID 
+ORDER BY Total_recaudado DESC;
+
+SELECT Product_name, Total_vendido FROM (
+SELECT ProductID, 
+		(SELECT ProductName FROM Products WHERE OD.ProductID = ProductID) AS Product_name,
+		SUM(Quantity) AS Total_vendido, 
+		(SUM(Quantity) * (SELECT Price FROM Products WHERE OD.ProductID = ProductID)) AS Total_recaudado 
+FROM [OrderDetails] OD 
+WHERE (SELECT Price FROM Products WHERE OD.ProductID = ProductID)
+GROUP BY ProductID 
+ORDER BY Total_recaudado DESC)
+WHERE Total_vendido > 300;
+
+SELECT FirstName, LastName,
+		(SELECT SUM(OD.Quantity) FROM [Orders] O, [OrderDetails] OD WHERE O.EmployeeID = E.EmployeeID AND OD.OrderID = O.OrderID) AS Unidades_vendidas
+FROM [Employees] E
+WHERE Unidades_vendidas > (SELECT AVG(Unidades_totales) FROM (
+	SELECT (SELECT SUM(OD.Quantity) FROM [Orders] O, [OrderDetails] OD WHERE O.EmployeeID = E2.EmployeeID AND OD.OrderID = O.OrderID) AS Unidades_totales FROM [Employees] E2
+GROUP BY E2.EmployeeID
+));
+
+-- JOIN
