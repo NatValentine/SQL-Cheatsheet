@@ -185,7 +185,10 @@ RIGHT JOIN Rewards R ON E.EmployeeID = R.EmployeeID; --  RIGHT JOINs are not sup
 SELECT FirstName, Reward, Month FROM Rewards R
 LEFT JOIN Employees E ON E.EmployeeID = R.EmployeeID; -- The result would be this.
 
--- FULL JOIN: Not supported by SQLite3. Represents the sum of a LEFT JOIN and RIGHT JOIN. Therefore:
+-- FULL OUTER JOIN
+SELECT * FROM Employees E FULL OUTER JOIN Rewards R
+ON E.EmployeeID = R.EmployeeID -- Not supported by SQLite3. It represents the sum of a LEFT JOIN and RIGHT JOIN. Therefore:
+
 SELECT FirstName, Reward, Month FROM Employees E
 LEFT JOIN Rewards R ON E.EmployeeID = R.EmployeeID
 UNION
@@ -224,3 +227,17 @@ SELECT * FROM Simplified_Products;
 
 DROP VIEW IF EXISTS Simplified_Products;
 
+-- MISC EXAMPLES
+SELECT ProductName, SUM(Price * Quantity) AS Revenue
+FROM OrderDetails OD
+JOIN Products P ON P.ProductID = OD.ProductID
+GROUP BY OD.ProductID
+ORDER BY Revenue DESC
+LIMIT 1; -- Best selling Product by total revenue
+
+SELECT FirstName || " " || LastName AS Employee, COUNT(*) AS Total
+FROM Orders O
+JOIN Employees E ON E.EmployeeID = O.EmployeeID
+GROUP BY O.EmployeeID
+ORDER BY Total DESC
+LIMIT 3; -- Top 3 Employees by sales
