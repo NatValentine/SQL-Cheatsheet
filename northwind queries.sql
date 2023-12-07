@@ -147,4 +147,49 @@ WHERE Unidades_vendidas > (SELECT AVG(Unidades_totales) FROM (
 GROUP BY E2.EmployeeID
 ));
 
--- JOIN
+-- JOINS
+SELECT * FROM Employees E, Orders O WHERE E.EmployeeID = O.EmployeeID; -- old, implicit JOIN
+
+SELECT * FROM Employees E CROSS JOIN Orders O; -- This is the above query without the WHERE clause. All posible combinations, not really useful.
+
+SELECT * FROM Employees E INNER JOIN Orders O ON E.EmployeeID = O.EmployeeID; -- Actual way of making the query. The default JOIN.
+
+-- Side quest: Create a new table and populate it.
+CREATE TABLE "Rewards" (
+"RewardID" INTEGER,
+"EmployeeID" INTEGER,
+"Reward" INTEGER,
+"Month" TEXT,
+PRIMARY KEY("RewardID" AUTOINCREMENT)
+);
+
+INSERT INTO Rewards (EmployeeID, Reward, Month) VALUES
+(3, 200, "January"),
+(2, 180, "February"),
+(5, 250, "March"),
+(1, 280, "April"),
+(null, null, "May");
+
+SELECT * FROM Rewards;
+
+-- Back to JOINs
+SELECT FirstName, Reward, Month FROM Employees E
+INNER JOIN Rewards R ON E.EmployeeID = R.EmployeeID;
+
+SELECT FirstName, Reward, Month FROM Employees E
+LEFT JOIN Rewards R ON E.EmployeeID = R.EmployeeID; -- All Employees and the reward they earned. If they didn't, fill with null.
+
+SELECT FirstName, Reward, Month FROM Employees E
+RIGHT JOIN Rewards R ON E.EmployeeID = R.EmployeeID; --  RIGHT JOINs are not supported in SQLite3 but...
+
+SELECT FirstName, Reward, Month FROM Rewards R
+LEFT JOIN Employees E ON E.EmployeeID = R.EmployeeID; -- The result would be this.
+
+-- FULL JOIN: Not supported by SQLite3. Represents the sum of a LEFT JOIN and RIGHT JOIN. Therefore:
+SELECT FirstName, Reward, Month FROM Employees E
+LEFT JOIN Rewards R ON E.EmployeeID = R.EmployeeID
+UNION
+SELECT FirstName, Reward, Month FROM Rewards R
+LEFT JOIN Employees E ON E.EmployeeID = R.EmployeeID;
+
+-- Notes on UNION: The rows from both sources must have the same number of columns and the same data types. UNION doesn't return duplicates. UNION ALL does.
