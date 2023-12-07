@@ -193,3 +193,34 @@ SELECT FirstName, Reward, Month FROM Rewards R
 LEFT JOIN Employees E ON E.EmployeeID = R.EmployeeID;
 
 -- Notes on UNION: The rows from both sources must have the same number of columns and the same data types. UNION doesn't return duplicates. UNION ALL does.
+
+
+-- INDEX
+SELECT * FROM Products WHERE ProductName = "Chais";
+
+CREATE INDEX name ON Products (ProductName); -- Allows null values and duplicates
+
+CREATE UNIQUE INDEX name ON Employees (FirstName) -- Creates a CONSTRAINT: Doesn't allow duplicates. Trying to insert an employee with the same name as another should fail.
+
+CREATE UNIQUE INDEX fullname ON Employees (FirstName, LastName) -- Composite INDEX. Can't have two John Smith employed, bro. F.
+
+-- Notes: PRIMARY KEYs are usually indexes by default. It is recomended to INDEX FOREIGN KEYs. Indexing not always works to make queries faster.
+
+SELECT * FROM OrderDetails OD
+JOIN Orders O
+WHERE OD.Quantity > 10 AND O.OrderDate > "1996-07-04"; -- Without indexing runs in 26ms, with the indexes it runs in 427ms. Much worse.
+
+CREATE INDEX idx_orderDetails_quantity ON OrderDetails (Quantity);
+CREATE INDEX idx_orders_orderDate ON Orders (OrderDate);
+
+DROP INDEX idx_orderDetails_quantity;
+DROP INDEX idx_orders_orderDate;
+
+-- VIEW
+CREATE VIEW Simplified_Products AS
+SELECT ProductID, ProductName, Price FROM Products WHERE ProductID > 20 ORDER BY ProductID;
+
+SELECT * FROM Simplified_Products;
+
+DROP VIEW IF EXISTS Simplified_Products;
+
